@@ -1,0 +1,19 @@
+name = "Zed-extension"
+version = "0.0.1"
+schema_version = 1
+authors = ["Your Name <you@example.com>"]
+description = "My cool extension"
+repository = "https://github.com/phil65/zed-extension"
+id = "zed-extension"
+
+[slash_commands.echo]
+description = "echoes the provided input"
+requires_argument = true
+
+[slash_commands.pick-one]
+description = "pick one of three options"
+requires_argument = true
+
+[slash_commands.github]
+description = "Provide a repo path (i.e. phil65/zed-extension)"
+requires_argument = true
