@@ -17,3 +17,7 @@ requires_argument = true
 [slash_commands.github]
 description = "Provide a repo path (i.e. phil65/zed-extension)"
 requires_argument = true
+
+[slash_commands.fabric]
+description = "Provide a fabric pattern name"
+requires_argument = true

@@ -4,6 +4,9 @@ use zed_extension_api::{
     SlashCommandOutput, SlashCommandOutputSection, Worktree,
 };
 
+const FABRIC_URL: &str =
+    "https://raw.githubusercontent.com/danielmiessler/fabric/refs/heads/main/patterns/{}/system.md";
+
 struct SlashCommandsExampleExtension;
 
 impl zed::Extension for SlashCommandsExampleExtension {
@@ -17,7 +20,7 @@ impl zed::Extension for SlashCommandsExampleExtension {
         _args: Vec<String>,
     ) -> Result<Vec<zed_extension_api::SlashCommandArgumentCompletion>, String> {
         match command.name.as_str() {
-            "echo" | "github" => Ok(vec![]),
+            "echo" | "github" | "fabric" => Ok(vec![]),
             "pick-one" => Ok(vec![
                 SlashCommandArgumentCompletion {
                     label: "Option One".to_string(),
@@ -47,6 +50,7 @@ impl zed::Extension for SlashCommandsExampleExtension {
     ) -> Result<SlashCommandOutput, String> {
         match command.name.as_str() {
             "github" => self.handle_github_command(args),
+            "fabric" => self.handle_fabric_command(args),
             "echo" => self.handle_echo_command(args),
             "pick-one" => self.handle_pick_one_command(args),
             command => Err(format!("unknown slash command: \"{command}\"")),
@@ -55,35 +59,60 @@ impl zed::Extension for SlashCommandsExampleExtension {
 }
 
 impl SlashCommandsExampleExtension {
-    fn handle_github_command(&self, args: Vec<String>) -> Result<SlashCommandOutput, String> {
-        if args.is_empty() {
-            return Err("Need to provide a repo path".to_string());
-        }
-        let text = args.join(" ");
-        let url = format!("https://uithub.com/{}", text);
-
+    fn download_file(&self, url: &str) -> Result<String, String> {
         let request = HttpRequest {
             method: HttpMethod::Get,
-            url: url.clone(),
+            url: url.to_string(),
             headers: vec![("User-Agent".to_string(), "Zed-Extension".to_string())],
             body: None,
             redirect_policy: RedirectPolicy::FollowAll,
         };
 
         match zed::http_client::fetch(&request) {
-            Ok(response) => {
-                let body_string = String::from_utf8_lossy(&response.body).to_string();
-                // Handle the response here if needed
-                Ok(zed::SlashCommandOutput {
-                    text: body_string,
-                    sections: vec![SlashCommandOutputSection {
-                        range: (0..url.len()).into(),
-                        label: "GitHub".to_string(),
-                    }],
-                })
-            }
+            Ok(response) => Ok(String::from_utf8_lossy(&response.body).to_string()),
+            Err(e) => Err(format!("API request failed. Error: {}.", e)),
+        }
+    }
+
+    fn handle_fabric_command(&self, args: Vec<String>) -> Result<SlashCommandOutput, String> {
+        if args.is_empty() {
+            return Err("Need to provide a pattern name".to_string());
+        }
+        let pattern = args.join(" ");
+        let url = FABRIC_URL.replace("{}", &pattern);
+
+        match self.download_file(&url) {
+            Ok(content) => Ok(zed::SlashCommandOutput {
+                text: content,
+                sections: vec![SlashCommandOutputSection {
+                    range: (0..url.len()).into(),
+                    label: "Fabric".to_string(),
+                }],
+            }),
             Err(e) => Ok(zed::SlashCommandOutput {
-                text: format!("API request failed. Error: {}.", e),
+                text: e,
+                sections: vec![],
+            }),
+        }
+    }
+
+    fn handle_github_command(&self, args: Vec<String>) -> Result<SlashCommandOutput, String> {
+        if args.is_empty() {
+            return Err("Need to provide a repo path".to_string());
+        }
+        let text = args.join(" ");
+        let url = format!("https://github.com/{}", text);
+
+        match self.download_file(&url) {
+            Ok(content) => Ok(zed::SlashCommandOutput {
+                text: content,
+                sections: vec![SlashCommandOutputSection {
+                    range: (0..url.len()).into(),
+                    label: "GitHub".to_string(),
+                }],
+            }),
+            Err(e) => Ok(zed::SlashCommandOutput {
+                text: e,
                 sections: vec![],
             }),
         }
