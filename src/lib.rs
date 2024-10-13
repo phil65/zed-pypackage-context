@@ -7,6 +7,8 @@ use zed_extension_api::{
 const FABRIC_URL: &str =
     "https://raw.githubusercontent.com/danielmiessler/fabric/refs/heads/main/patterns/{}/system.md";
 
+const PYPI_API_URL: &str = "https://pypi.org/pypi/{}/json";
+
 struct SlashCommandsExampleExtension;
 
 impl zed::Extension for SlashCommandsExampleExtension {
@@ -20,7 +22,7 @@ impl zed::Extension for SlashCommandsExampleExtension {
         _args: Vec<String>,
     ) -> Result<Vec<zed_extension_api::SlashCommandArgumentCompletion>, String> {
         match command.name.as_str() {
-            "echo" | "github" | "fabric" => Ok(vec![]),
+            "echo" | "github" | "fabric" | "pypi" => Ok(vec![]),
             "pick-one" => Ok(vec![
                 SlashCommandArgumentCompletion {
                     label: "Option One".to_string(),
@@ -53,6 +55,7 @@ impl zed::Extension for SlashCommandsExampleExtension {
             "fabric" => self.handle_fabric_command(args),
             "echo" => self.handle_echo_command(args),
             "pick-one" => self.handle_pick_one_command(args),
+            "pypi" => self.handle_pypi_command(args),
             command => Err(format!("unknown slash command: \"{command}\"")),
         }
     }
@@ -132,6 +135,37 @@ impl SlashCommandsExampleExtension {
             }],
             text,
         })
+    }
+
+    fn handle_pypi_command(&self, args: Vec<String>) -> Result<SlashCommandOutput, String> {
+        if args.is_empty() {
+            return Err("Need to provide a package name".to_string());
+        }
+        let package_name = args.join("-");
+        let url = PYPI_API_URL.replace("{}", &package_name);
+
+        match self.download_file(&url) {
+            Ok(content) => {
+                let json: serde_json::Value = serde_json::from_str(&content)
+                    .map_err(|e| format!("Failed to parse JSON: {}", e))?;
+
+                let repo_url = json["info"]["project_urls"]["Source"]
+                    .as_str()
+                    .ok_or_else(|| "GitHub URL not found".to_string())?;
+
+                Ok(zed::SlashCommandOutput {
+                    text: repo_url.to_string(),
+                    sections: vec![SlashCommandOutputSection {
+                        range: (0..repo_url.len()).into(),
+                        label: "PyPI".to_string(),
+                    }],
+                })
+            }
+            Err(e) => Ok(zed::SlashCommandOutput {
+                text: e,
+                sections: vec![],
+            }),
+        }
     }
 
     fn handle_pick_one_command(&self, args: Vec<String>) -> Result<SlashCommandOutput, String> {

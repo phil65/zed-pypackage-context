@@ -21,3 +21,7 @@ requires_argument = true
 [slash_commands.fabric]
 description = "Provide a fabric pattern name"
 requires_argument = true
+
+[slash_commands.pypi]
+description = "Provide a PyPi package name"
+requires_argument = true
