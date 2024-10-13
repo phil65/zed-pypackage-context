@@ -11,5 +11,8 @@ extensions = "0.2.0"
 zed_extension_api = "0.1.0"
 anyhow = "1.0"
 async-trait = "0.1"
-serde = "1"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1.0"
 # pyo3 = { version = "0.18.1", features = ["auto-initialize"] }
+csv = "1"
+bundle_repo = "0.2.0"
