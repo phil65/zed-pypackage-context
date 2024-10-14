@@ -1,21 +1,13 @@
-name = "Zed-extension"
+name = "PyPackage context"
 version = "0.0.1"
 schema_version = 1
-authors = ["Your Name <you@example.com>"]
-description = "My cool extension"
+authors = ["Philipp Temminghoff <philipptemminghoff@gmail.com>"]
+description = "Slash commands for adding Python packages to the context"
 repository = "https://github.com/phil65/zed-extension"
-id = "zed-extension"
-
-[slash_commands.pick-one]
-description = "pick one of three options"
-requires_argument = true
+id = "pypackage-context"
 
 [slash_commands.github]
 description = "Provide a repo path (i.e. phil65/zed-extension)"
-requires_argument = true
-
-[slash_commands.fabric]
-description = "Provide a fabric pattern name"
 requires_argument = true
 
 [slash_commands.pypi]
