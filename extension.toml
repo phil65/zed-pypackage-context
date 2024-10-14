@@ -6,10 +6,6 @@ description = "My cool extension"
 repository = "https://github.com/phil65/zed-extension"
 id = "zed-extension"
 
-[slash_commands.echo]
-description = "echoes the provided input"
-requires_argument = true
-
 [slash_commands.pick-one]
 description = "pick one of three options"
 requires_argument = true

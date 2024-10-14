@@ -22,7 +22,7 @@ impl zed::Extension for SlashCommandsExampleExtension {
         _args: Vec<String>,
     ) -> Result<Vec<zed_extension_api::SlashCommandArgumentCompletion>, String> {
         match command.name.as_str() {
-            "echo" | "github" | "fabric" | "pypi" => Ok(vec![]),
+            "github" | "fabric" | "pypi" => Ok(vec![]),
             "pick-one" => Ok(vec![
                 SlashCommandArgumentCompletion {
                     label: "Option One".to_string(),
@@ -53,7 +53,6 @@ impl zed::Extension for SlashCommandsExampleExtension {
         match command.name.as_str() {
             "github" => self.handle_github_command(args),
             "fabric" => self.handle_fabric_command(args),
-            "echo" => self.handle_echo_command(args),
             "pick-one" => self.handle_pick_one_command(args),
             "pypi" => self.handle_pypi_command(args),
             command => Err(format!("unknown slash command: \"{command}\"")),
@@ -119,22 +118,6 @@ impl SlashCommandsExampleExtension {
                 sections: vec![],
             }),
         }
-    }
-
-    fn handle_echo_command(&self, args: Vec<String>) -> Result<SlashCommandOutput, String> {
-        if args.is_empty() {
-            return Err("nothing to echo".to_string());
-        }
-
-        let text = args.join(" ");
-
-        Ok(SlashCommandOutput {
-            sections: vec![SlashCommandOutputSection {
-                range: (0..text.len()).into(),
-                label: "Echo".to_string(),
-            }],
-            text,
-        })
     }
     fn handle_pypi_command(&self, args: Vec<String>) -> Result<SlashCommandOutput, String> {
         if args.is_empty() {
