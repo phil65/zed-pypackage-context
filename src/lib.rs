@@ -104,7 +104,7 @@ impl SlashCommandsExampleExtension {
             return Err("Need to provide a repo path".to_string());
         }
         let text = args.join(" ");
-        let url = format!("https://github.com/{}", text);
+        let url = format!("https://uithub.com/{}", text);
 
         match self.download_file(&url) {
             Ok(content) => Ok(zed::SlashCommandOutput {
@@ -136,7 +136,6 @@ impl SlashCommandsExampleExtension {
             text,
         })
     }
-
     fn handle_pypi_command(&self, args: Vec<String>) -> Result<SlashCommandOutput, String> {
         if args.is_empty() {
             return Err("Need to provide a package name".to_string());
@@ -148,15 +147,18 @@ impl SlashCommandsExampleExtension {
             Ok(content) => {
                 let json: serde_json::Value = serde_json::from_str(&content)
                     .map_err(|e| format!("Failed to parse JSON: {}", e))?;
-
                 let repo_url = json["info"]["project_urls"]["Source"]
                     .as_str()
+                    .or_else(|| json["info"]["project_urls"]["Repository"].as_str())
+                    .or_else(|| json["info"]["project_urls"]["Source Code"].as_str())
                     .ok_or_else(|| "GitHub URL not found".to_string())?;
 
+                let uithub_url = repo_url.replace("github", "uithub");
+
                 Ok(zed::SlashCommandOutput {
-                    text: repo_url.to_string(),
+                    text: uithub_url.clone(),
                     sections: vec![SlashCommandOutputSection {
-                        range: (0..repo_url.len()).into(),
+                        range: (0..uithub_url.len()).into(),
                         label: "PyPI".to_string(),
                     }],
                 })
