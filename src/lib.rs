@@ -106,13 +106,16 @@ impl SlashCommandsExampleExtension {
         let url = format!("https://uithub.com/{}", text);
 
         match self.download_file(&url) {
-            Ok(content) => Ok(zed::SlashCommandOutput {
-                text: content,
-                sections: vec![SlashCommandOutputSection {
-                    range: (0..url.len()).into(),
-                    label: "GitHub".to_string(),
-                }],
-            }),
+            Ok(content) => {
+                let content_len = content.len();
+                Ok(zed::SlashCommandOutput {
+                    text: content.clone(),
+                    sections: vec![SlashCommandOutputSection {
+                        range: (0..content_len).into(),
+                        label: "GitHub".to_string(),
+                    }],
+                })
+            }
             Err(e) => Ok(zed::SlashCommandOutput {
                 text: e,
                 sections: vec![],
