@@ -34,11 +34,6 @@ impl zed::Extension for SlashCommandsExampleExtension {
                     new_text: "option-2".to_string(),
                     run_command: true,
                 },
-                SlashCommandArgumentCompletion {
-                    label: "Option Three".to_string(),
-                    new_text: "option-3".to_string(),
-                    run_command: true,
-                },
             ]),
             command => Err(format!("unknown slash command: \"{command}\"")),
         }
@@ -161,7 +156,7 @@ impl SlashCommandsExampleExtension {
             return Err("no option selected".to_string());
         };
 
-        if !["option-1", "option-2", "option-3"].contains(&selection.as_str()) {
+        if !["option-1", "option-2"].contains(&selection.as_str()) {
             return Err(format!("{} is not a valid option", selection));
         }
 
