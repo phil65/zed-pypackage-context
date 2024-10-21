@@ -58,8 +58,31 @@ impl SlashCommandsExampleExtension {
         if args.is_empty() {
             return Err("Need to provide a repo path".to_string());
         }
-        let text = args.join(" ");
-        let url = format!("https://uithub.com/{}", text);
+
+        let input = &args[0];
+        let parts: Vec<&str> = input.splitn(4, '/').collect();
+
+        let max_tokens = args
+            .get(1)
+            .and_then(|s| s.parse::<usize>().ok())
+            .map(|n| format!("?maxTokens={}", n))
+            .unwrap_or_default();
+
+        let base_url = match parts.len() {
+            2 => format!("https://uithub.com/{}/{}", parts[0], parts[1]),
+            4 => format!(
+                "https://uithub.com/{}/{}/tree/{}/{}",
+                parts[0], parts[1], parts[2], parts[3]
+            ),
+            _ => {
+                return Err(
+                    "Invalid repo path format. Use 'owner/repo' or 'owner/repo/branch/path'"
+                        .to_string(),
+                )
+            }
+        };
+
+        let url = format!("{}{}", base_url, max_tokens);
 
         match self.download_file(&url) {
             Ok(content) => {
@@ -68,7 +91,7 @@ impl SlashCommandsExampleExtension {
                     text: content.clone(),
                     sections: vec![SlashCommandOutputSection {
                         range: (0..content_len).into(),
-                        label: format!("GitHub: {}", text),
+                        label: format!("GitHub: {}", input),
                     }],
                 })
             }
@@ -78,6 +101,7 @@ impl SlashCommandsExampleExtension {
             }),
         }
     }
+
     fn handle_pypi_command(&self, args: Vec<String>) -> Result<SlashCommandOutput, String> {
         if args.is_empty() {
             return Err("Need to provide a package name".to_string());
