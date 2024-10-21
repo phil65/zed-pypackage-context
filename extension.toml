@@ -3,7 +3,7 @@ version = "0.0.1"
 schema_version = 1
 authors = ["Philipp Temminghoff <philipptemminghoff@gmail.com>"]
 description = "Slash commands for adding Python packages to the context"
-repository = "https://github.com/phil65/zed-extension"
+repository = "https://github.com/phil65/zed-pypackage-context"
 id = "pypackage-context"
 
 [slash_commands.github]
